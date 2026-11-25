@@ -1,0 +1,183 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with role assignment for RBAC in Akher Sa'a Special",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["general_manager", "direct_manager", "hr_manager", "hr", "admin"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "email", "role"]
+    },
+    "JobApplication": {
+      "title": "JobApplication",
+      "description": "Job application document with 4-tier recruitment pipeline approvals (HR Specialist -> HR Manager -> Direct Manager -> General Manager)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "recordNumber": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "fullName": { "type": "string" },
+        "nationalId": { "type": "string" },
+        "phone": { "type": "string" },
+        "positionApplied": { "type": "string" },
+        "assignedDepartment": { "type": "string" },
+        "assignedDepartmentManager": { "type": "string" },
+        "status": { "type": "string" },
+        "lastActionDate": { "type": "string" },
+        "lastActionType": { "type": "string" },
+        "lastUpdated": { "type": "string" },
+        "isPraying": { "type": "string" },
+        "militaryStatus": { "type": "string" },
+        "expectedSalary": { "type": "string" },
+        "drivingLicenseDegree": { "type": "string" },
+        "personalPhotoUrl": { "type": "string" },
+        "prevCompany2": { "type": "string" },
+        "prevPosition2": { "type": "string" },
+        "prevCompany3": { "type": "string" },
+        "prevPosition3": { "type": "string" },
+        "approvalHistory": { "type": "array", "description": "Immutable log of all approvals and decisions with user ID, role, and timestamps" },
+        "signatures": { "type": "object", "description": "Stage-keyed immutable electronic signatures linked to verified user accounts" }
+      },
+      "required": ["id", "recordNumber", "fullName", "positionApplied", "status"]
+    },
+    "AppNotification": {
+      "title": "AppNotification",
+      "description": "In-app notifications for hiring pipeline events",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "applicantId": { "type": "string" },
+        "applicantName": { "type": "string" },
+        "position": { "type": "string" },
+        "targetRole": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "isRead": { "type": "boolean" },
+        "priority": { "type": "string" }
+      },
+      "required": ["id", "title", "message", "timestamp", "isRead"]
+    },
+    "UserIdentity": {
+      "title": "UserIdentity",
+      "description": "Enterprise IAM user identity with granular permissions, department assignment, and status",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "identityNumber": { "type": "string" },
+        "fullName": { "type": "string" },
+        "email": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "department": { "type": "string" },
+        "jobTitle": { "type": "string" },
+        "role": { "type": "string" },
+        "userType": { "type": "string" },
+        "status": { "type": "string" },
+        "permissions": { "type": "object" },
+        "officialSignature": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "createdDateArabic": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "isSuperAdmin": { "type": "boolean" }
+      },
+      "required": ["id", "identityNumber", "fullName", "email", "role", "status"]
+    },
+    "CompanyDepartment": {
+      "title": "CompanyDepartment",
+      "description": "Organizational department mapping and manager assignments",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "code": { "type": "string" },
+        "description": { "type": "string" },
+        "managerIdentityId": { "type": "string" },
+        "managerName": { "type": "string" },
+        "managerEmail": { "type": "string" },
+        "roleKey": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "name", "code", "roleKey"]
+    },
+    "AuditLogEntry": {
+      "title": "AuditLogEntry",
+      "description": "Security audit trail for identity lifecycle, permissions, and administrative operations",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "action": { "type": "string" },
+        "performedByEmail": { "type": "string" },
+        "performedByName": { "type": "string" },
+        "performedByRole": { "type": "string" },
+        "targetId": { "type": "string" },
+        "targetType": { "type": "string" },
+        "targetName": { "type": "string" },
+        "details": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "dateArabic": { "type": "string" }
+      },
+      "required": ["id", "action", "performedByEmail", "timestamp"]
+    },
+    "ElectronicSignature": {
+      "title": "ElectronicSignature",
+      "description": "Immutable electronic signature bound to an authenticated user identity and workflow stage",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "applicationId": { "type": "string" },
+        "userId": { "type": "string" },
+        "fullName": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string" },
+        "jobTitle": { "type": "string" },
+        "department": { "type": "string" },
+        "stage": { "type": "string", "enum": ["hr", "hr_manager", "direct_manager", "general_manager"] },
+        "stageLabel": { "type": "string" },
+        "action": { "type": "string" },
+        "decision": { "type": "string" },
+        "signedAt": { "type": "string" },
+        "signedAtArabic": { "type": "string" },
+        "immutable": { "type": "boolean" }
+      },
+      "required": ["id", "applicationId", "userId", "fullName", "email", "role", "stage", "signedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profiles and assigned role"
+    },
+    "/applications/{applicationId}": {
+      "schema": "JobApplication",
+      "description": "Job applications evaluated across HR, Direct Manager, and GM"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "AppNotification",
+      "description": "In-app notifications for hiring pipeline events"
+    },
+    "/identities/{identityId}": {
+      "schema": "UserIdentity",
+      "description": "Enterprise IAM identity documents"
+    },
+    "/departments/{departmentId}": {
+      "schema": "CompanyDepartment",
+      "description": "Company departments and organizational structures"
+    },
+    "/audit_logs/{logId}": {
+      "schema": "AuditLogEntry",
+      "description": "Security and governance audit log entries"
+    },
+    "/electronic_signatures/{signatureId}": {
+      "schema": "ElectronicSignature",
+      "description": "Append-only ledger of verified electronic signatures per application stage"
+    }
+  }
+}

@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <script>
+      (function() {
+        // 1. Suppress benign Vite HMR WebSocket console messages in iframe/Cloud Run
+        var origConsoleError = console.error;
+        console.error = function() {
+          var str = '';
+          for (var i = 0; i < arguments.length; i++) {
+            var arg = arguments[i];
+            str += ' ' + ((arg && (arg.message || arg.stack)) || String(arg || ''));
+          }
+          if (str.indexOf('WebSocket') !== -1 || str.indexOf('[vite]') !== -1 || str.indexOf('ws://') !== -1 || str.indexOf('wss://') !== -1) {
+            return;
+          }
+          return origConsoleError.apply(console, arguments);
+        };
+
+        var origConsoleWarn = console.warn;
+        console.warn = function() {
+          var str = '';
+          for (var i = 0; i < arguments.length; i++) {
+            var arg = arguments[i];
+            str += ' ' + ((arg && (arg.message || arg.stack)) || String(arg || ''));
+          }
+          if (str.indexOf('WebSocket') !== -1 || str.indexOf('[vite]') !== -1) {
+            return;
+          }
+          return origConsoleWarn.apply(console, arguments);
+        };
+
+        // 2. Intercept window error and unhandledrejection
+        window.addEventListener('error', function(e) {
+          var msg = (e && (e.message || (e.error && e.error.message))) || String(e || '');
+          if (msg.indexOf('WebSocket') !== -1 || msg.indexOf('[vite]') !== -1 || msg.indexOf('ws://') !== -1 || msg.indexOf('wss://') !== -1) {
+            if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+            if (e.preventDefault) e.preventDefault();
+            return true;
+          }
+        }, true);
+
+        window.addEventListener('unhandledrejection', function(e) {
+          var reason = e ? e.reason : null;
+          var msg = (reason && (reason.message || reason.stack)) || String(reason || '');
+          if (msg.indexOf('WebSocket') !== -1 || msg.indexOf('[vite]') !== -1 || msg.indexOf('ws://') !== -1 || msg.indexOf('wss://') !== -1) {
+            if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+            if (e.preventDefault) e.preventDefault();
+            return true;
+          }
+        }, true);
+
+        // 3. Mock Vite HMR WebSocket so it cleanly resolves without closing
+        var NativeWebSocket = window.WebSocket;
+        if (NativeWebSocket) {
+          window.WebSocket = function(url, protocols) {
+            var isViteHmr = false;
+            if (protocols === 'vite-hmr' || protocols === 'vite-ping') isViteHmr = true;
+            if (Array.isArray(protocols) && (protocols.indexOf('vite-hmr') !== -1 || protocols.indexOf('vite-ping') !== -1)) isViteHmr = true;
+            if (typeof url === 'string' && (url.indexOf('token=') !== -1 || url.indexOf('/@vite/') !== -1)) isViteHmr = true;
+
+            if (isViteHmr) {
+              var listeners = {};
+              var mockSocket = {
+                url: url,
+                readyState: 1, // WebSocket.OPEN
+                CONNECTING: 0,
+                OPEN: 1,
+                CLOSING: 2,
+                CLOSED: 3,
+                send: function() {},
+                close: function() {
+                  mockSocket.readyState = 3;
+                },
+                addEventListener: function(type, listener) {
+                  if (!listeners[type]) listeners[type] = [];
+                  listeners[type].push(listener);
+                  if (type === 'open') {
+                    setTimeout(function() {
+                      try { listener({ type: 'open', target: mockSocket }); } catch(err) {}
+                    }, 0);
+                  }
+                },
+                removeEventListener: function(type, listener) {
+                  if (!listeners[type]) return;
+                  listeners[type] = listeners[type].filter(function(l) { return l !== listener; });
+                },
+                dispatchEvent: function() { return true; }
+              };
+              return mockSocket;
+            }
+
+            return new NativeWebSocket(url, protocols);
+          };
+          window.WebSocket.prototype = NativeWebSocket.prototype;
+          window.WebSocket.CONNECTING = 0;
+          window.WebSocket.OPEN = 1;
+          window.WebSocket.CLOSING = 2;
+          window.WebSocket.CLOSED = 3;
+        }
+      })();
+    </script>
+    <title>شركة أخر ساعة اسبيشيال - لوحة إدارة واعتماد طلبات التوظيف</title>
+    <meta name="description" content="منظومة شركة أخر ساعة اسبيشيال لإدارة وتدقيق واعتماد طلبات التوظيف وإدارة المستخدمين واتخاذ قرارات القبول والرواتب والرفض" />
+    <meta name="theme-color" content="#DC2626" />
+    
+    <!-- Mobile Web App & iOS PWA tags -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="أخر ساعة اسبيشيال" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+
+    <meta property="og:title" content="شركة أخر ساعة اسبيشيال - لوحة إدارة واعتماد طلبات التوظيف" />
+    <meta property="og:description" content="لوحة تحكم إدارية خاصة بشركة أخر ساعة اسبيشيال لإدارة وتدقيق واعتماد طلبات التوظيف واتخاذ قرارات القبول والرواتب والرفض" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Google Fonts: Cairo & Tajawal for primary Arabic typography & JetBrains Mono for numbers -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        font-family: 'Cairo', 'Tajawal', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
+      body {
+        -webkit-tap-highlight-color: transparent;
+        font-feature-settings: 'tnum' on, 'lnum' on;
+      }
+      .font-mono {
+        font-family: 'JetBrains Mono', monospace, ui-monospace;
+        font-variant-numeric: tabular-nums;
+      }
+      /* Custom Smooth Scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #F4F4F5;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #D4D4D8;
+        border-radius: 9999px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #A1A1AA;
+      }
+      @media print {
+        @page {
+          size: A4 portrait;
+          margin: 10mm;
+        }
+        body {
+          print-color-adjust: exact;
+          -webkit-print-color-adjust: exact;
+          background: #ffffff !important;
+        }
+        .no-print {
+          display: none !important;
+        }
+        .print-only {
+          display: block !important;
+        }
+      }
+      @media screen {
+        .print-only {
+          display: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-[#F7F8FA] text-[#111318] antialiased selection:bg-red-100 selection:text-red-900 min-h-screen">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

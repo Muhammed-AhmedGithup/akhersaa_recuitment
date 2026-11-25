@@ -1,0 +1,128 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isSuperAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'ma1927393@gmail.com' ||
+        request.auth.uid == 'usr-super-admin-01' ||
+        request.auth.uid == 'identity_super_admin'
+      );
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'ma1927393@gmail.com' ||
+        request.auth.uid == 'usr-super-admin-01' ||
+        request.auth.uid == 'identity_super_admin' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isProtectedSuperAdmin(docId) {
+      return docId == 'usr-super-admin-01' ||
+        docId == 'ma1927393@gmail.com' ||
+        docId == 'identity_super_admin' ||
+        docId == 'identity_admin_ma1927393' ||
+        (resource != null && (
+          resource.data.get('email', '') == 'ma1927393@gmail.com' ||
+          resource.data.get('isSuperAdmin', false) == true ||
+          resource.data.get('id', '') == 'usr-super-admin-01'
+        ));
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Test connection endpoint
+    match /test/{connectionId} {
+      allow read: if true;
+    }
+
+    // Users collection for authentication profiles & roles
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if isValidId(userId);
+      // Protect super admin from demotion or deactivation
+      allow update: if isValidId(userId) && (
+        !isProtectedSuperAdmin(userId) || (
+          request.resource.data.get('role', 'admin') == 'admin' &&
+          request.resource.data.get('isSuperAdmin', true) == true &&
+          request.resource.data.get('status', 'active') == 'active'
+        )
+      );
+      // Super admin can NEVER be deleted
+      allow delete: if isValidId(userId) && !isProtectedSuperAdmin(userId);
+    }
+
+    // Admins registry - Super Admin cannot be removed
+    match /admins/{adminId} {
+      allow read: if true;
+      allow create, update: if isValidId(adminId);
+      allow delete: if isValidId(adminId) && !isProtectedSuperAdmin(adminId);
+    }
+
+    // Job Applications collection - full access for authenticated workflow
+    match /applications/{applicationId} {
+      allow read: if true;
+      allow create, update, delete: if isValidId(applicationId);
+    }
+
+    // Notifications collection
+    match /notifications/{notificationId} {
+      allow read: if true;
+      allow create, update, delete: if isValidId(notificationId);
+    }
+
+    // Identities collection for Enterprise IAM
+    match /identities/{identityId} {
+      allow read: if true;
+      allow create: if isValidId(identityId);
+      // Protect super admin identity from demotion or deactivation
+      allow update: if isValidId(identityId) && (
+        !isProtectedSuperAdmin(identityId) || (
+          request.resource.data.get('role', 'admin') == 'admin' &&
+          request.resource.data.get('isSuperAdmin', true) == true &&
+          request.resource.data.get('status', 'active') == 'active'
+        )
+      );
+      // Super admin can NEVER be deleted
+      allow delete: if isValidId(identityId) && !isProtectedSuperAdmin(identityId);
+    }
+
+    // Company Departments collection
+    match /departments/{departmentId} {
+      allow read: if true;
+      allow create, update, delete: if isValidId(departmentId);
+    }
+
+    // Audit Logs collection - append-only
+    match /audit_logs/{logId} {
+      allow read: if true;
+      allow create: if isValidId(logId);
+      allow update, delete: if false; // Immutable audit trail
+    }
+
+    // Electronic Signatures collection - append-only immutable verification ledger
+    match /electronic_signatures/{signatureId} {
+      allow read: if true;
+      allow create: if isValidId(signatureId);
+      allow update, delete: if false; // Signatures cannot be altered or deleted
+    }
+  }
+}

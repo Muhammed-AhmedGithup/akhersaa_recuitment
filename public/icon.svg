@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Clean white background with rounded corners for app icons -->
+  <rect width="512" height="512" rx="112" fill="#ffffff" />
+  
+  <g transform="translate(256, 256) scale(2.2) translate(-100, -100)">
+    <!-- Top-left red quadrant (9 to 12 o'clock) -->
+    <path
+      d="M 100 100 L 100 8 A 92 92 0 0 0 8 100 Z"
+      fill="#E51A24"
+    />
+    <!-- Center red circle -->
+    <circle cx="100" cy="100" r="54" fill="#E51A24" />
+    <!-- Outer black ring from 12 o'clock clockwise to 9 o'clock -->
+    <path
+      d="M 107 8.27 A 92 92 0 1 1 8.27 107 L 32.36 107 A 68 68 0 1 0 107 32.36 Z"
+      fill="#0F0F0F"
+    />
+  </g>
+</svg>
